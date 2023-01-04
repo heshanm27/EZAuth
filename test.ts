@@ -1,4 +1,4 @@
-import { handleSignIn } from "./src/index";
+import { handleSignIn, handleSignUp } from "./src/index";
 
 const signTestObj = {
   email: "mhesahn27@gmail.com",
