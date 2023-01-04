@@ -1,75 +1,57 @@
 import axios, { AxiosError } from "axios";
-
+import validator from "validator";
 interface ISignInput {
-  email?: string;
-  userName?: string;
-  password: String;
-  apiUrl: string;
+  email: string;
+  password: string;
 }
-
-interface ISignInError {
-  error: boolean;
-  errorMsg: ISignInput;
+interface IValidate {
+  valid: boolean;
+  errorMsg?: ISignInput;
 }
 
 interface IResponse {
   token: string;
-  error: ISignInError;
+  error: any;
 }
 
-const baseError: ISignInError = {
-  error: false,
-  errorMsg: {
-    apiUrl: "",
-    password: "",
-  },
-};
-
-const defaultResponse: IResponse = {
-  error: baseError,
-  token: "",
-};
-
-function validate(value: ISignInput): boolean {
+function validate(value: ISignInput): IValidate {
   const tempObj: ISignInput = {
-    apiUrl: "",
+    email: "",
     password: "",
   };
 
-  tempObj.email = value?.email! === "" ? "Please provide email" : undefined;
-  tempObj.password = value.password === "" ? "Please provide password" : "";
-  tempObj.userName = value?.userName! === "" ? "Please provide username" : undefined;
-  tempObj.apiUrl = value.apiUrl === "" ? "Please provide api url" : "";
+  console.log(value?.email);
+  tempObj.email = validator.isEmail(value?.email) ? "" : "Please provide email";
+  tempObj.password = validator.isEmpty(value?.password) ? "Please provide password" : "";
 
-  if (Object.values(tempObj).every((x) => x === undefined || x === "")) {
-    return true;
-  } else {
-    baseError.error = true;
-    baseError.errorMsg = {
-      ...tempObj,
+  if (Object.values(tempObj).every((x) => x === "")) {
+    return {
+      valid: true,
     };
-    return false;
+  } else {
+    return {
+      valid: false,
+      errorMsg: { ...tempObj },
+    };
   }
 }
 
-async function apiCall(input: ISignInput): Promise<string> {
+async function handleSignIn(input: ISignInput, apiUrl: string): Promise<IResponse> {
+  const defaultResponse: IResponse = {
+    error: {},
+    token: "",
+  };
+
   try {
-    const response = await axios.post(input.apiUrl, { email: input.email, password: input.password });
+    const response = await axios.post(apiUrl, { email: input.email, password: input.password });
     const { token } = response.data;
-    return token;
+    defaultResponse.token = token;
   } catch (error) {
     const err = error as AxiosError;
-    console.log(err.response?.data);
-    return "";
+    defaultResponse.error = err.response?.data;
+  } finally {
+    return defaultResponse;
   }
 }
 
-async function handleSignIn(input: ISignInput): Promise<IResponse> {
-  if (validate(input)) {
-    const token = await apiCall(input);
-    defaultResponse.token = token;
-  }
-  return defaultResponse;
-}
-
-export { handleSignIn };
+export { handleSignIn, validate };
