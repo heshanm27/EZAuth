@@ -17,7 +17,7 @@ interface IResponse {
 /**
  *
  * @param  value - {email: string, password: string}
- * @returns {valid: boolean, errorMsg?: {email: string, password: string}}
+ * @returns { valid: boolean, errorMsg?: {email: string, password: string} }
  */
 function validate(value: ISignInput): IValidate {
   const tempObj: ISignInput = {
@@ -43,17 +43,24 @@ function validate(value: ISignInput): IValidate {
  * @description - Handle the sign in process
  * @param input - {email: string, password: string}
  * @param apiUrl string
- * @returns {token: string, error?: any}
+ * @returns { token : string, error?: any }
  ***/
 async function handleSignIn(input: ISignInput, apiUrl: string): Promise<IResponse> {
   try {
-    const response = await axios.post(apiUrl, { email: input.email, password: input.password });
-    const { token } = response.data;
-
-    return {
-      token,
-      error: {},
-    };
+    const { valid, errorMsg } = validate(input);
+    if (valid) {
+      const response = await axios.post(apiUrl, { email: input.email, password: input.password });
+      const { token } = response.data;
+      return {
+        token,
+        error: {},
+      };
+    } else {
+      return {
+        token: "",
+        error: errorMsg,
+      };
+    }
   } catch (error) {
     const err = error as AxiosError;
     return {
