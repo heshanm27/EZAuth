@@ -72,4 +72,4 @@ async function handleSignIn(input: ISignInput, apiUrl: string): Promise<IRespons
   }
 }
 
-export { handleSignIn, validate };
+export { handleSignIn };
