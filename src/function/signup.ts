@@ -1,61 +1,78 @@
+import axios, { AxiosError } from "axios";
+import validator from "validator";
+
 interface ISignUpInput {
-  email?: string;
-  userName?: string;
-  password: String;
-  apiUrl: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  password: string;
 }
 
-interface ISignInError {
-  error: boolean;
-  errorMsg: ISignUpInput;
+interface IValidate {
+  valid: boolean;
+  errorMsg?: ISignUpInput;
 }
-
-const baseError: ISignInError = {
-  error: false,
-  errorMsg: {
-    apiUrl: "",
-    password: "",
-  },
-};
 
 interface IResponse {
   status: boolean;
-  error: ISignInError;
+  error?: any;
 }
 
-function validate(value: ISignUpInput): boolean {
+/**
+ * @description - Validate the input data
+ * @param value - {email: string, firstName: string, lastName: string, password: string}
+ * @returns {valid: boolean, errorMsg?: {email: string, firstName: string, lastName: string, password: string}}}
+ */
+function validate(value: ISignUpInput): IValidate {
   const tempObj: ISignUpInput = {
-    apiUrl: "",
     password: "",
+    email: "",
+    firstName: "",
+    lastName: "",
   };
 
-  tempObj.email = value?.email === "" ? "Please provide email" : "";
-  tempObj.password = value.password === "" ? "Please provide password" : "";
-  tempObj.userName = value.userName === "" ? "Please provide username" : "";
-  tempObj.apiUrl = value.apiUrl === "" ? "Please provide api url" : "";
+  tempObj.email = validator.isEmail(value?.email) ? "" : "Please provide email";
+  tempObj.password = validator.isEmpty(value?.password) ? "Please provide password" : "";
+  tempObj.firstName = validator.isEmpty(value?.firstName) ? "Please provide first name" : "";
+  tempObj.lastName = validator.isEmpty(value?.lastName) ? "Please provide last name" : "";
 
   if (Object.values(tempObj).every((x) => x === "")) {
-    return true;
-  } else {
-    baseError.error = true;
-    baseError.errorMsg = {
-      ...tempObj,
+    return {
+      valid: true,
     };
-    return false;
+  } else {
+    return {
+      valid: false,
+      errorMsg: { ...tempObj },
+    };
   }
 }
 
-function handleSignUp(input: ISignUpInput): IResponse {
-  const defaultResponse: IResponse = {
-    error: baseError,
-    status: false,
-  };
-
-  if (validate(input)) {
-    return defaultResponse;
+/**
+ * @description - Handle the sign up process
+ * @param userData - {email: string, firstName: string, lastName: string, password: string}
+ * @param apiUrl string
+ * @returns {status: boolean, error?: any}
+ */
+async function handleSignUp(userData: ISignUpInput, apiUrl: string): Promise<IResponse> {
+  try {
+    await axios.post(apiUrl, {
+      email: userData.email,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      password: userData.password,
+    });
+    return {
+      status: false,
+      error: {},
+    };
+  } catch (error) {
+    const err = error as AxiosError;
+    return {
+      status: false,
+      error: err.response?.data,
+    };
   }
-
-  return defaultResponse;
 }
 
-export { handleSignUp };
+export { handleSignUp, validate };
