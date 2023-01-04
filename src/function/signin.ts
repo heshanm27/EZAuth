@@ -14,13 +14,16 @@ interface IResponse {
   error: any;
 }
 
+/**
+ *
+ * @param  value - {email: string, password: string}
+ * @returns {valid: boolean, errorMsg?: {email: string, password: string}}
+ */
 function validate(value: ISignInput): IValidate {
   const tempObj: ISignInput = {
     email: "",
     password: "",
   };
-
-  console.log(value?.email);
   tempObj.email = validator.isEmail(value?.email) ? "" : "Please provide email";
   tempObj.password = validator.isEmpty(value?.password) ? "Please provide password" : "";
 
@@ -36,21 +39,27 @@ function validate(value: ISignInput): IValidate {
   }
 }
 
+/**
+ * @description - Handle the sign in process
+ * @param input - {email: string, password: string}
+ * @param apiUrl string
+ * @returns {token: string, error?: any}
+ ***/
 async function handleSignIn(input: ISignInput, apiUrl: string): Promise<IResponse> {
-  const defaultResponse: IResponse = {
-    error: {},
-    token: "",
-  };
-
   try {
     const response = await axios.post(apiUrl, { email: input.email, password: input.password });
     const { token } = response.data;
-    defaultResponse.token = token;
+
+    return {
+      token,
+      error: {},
+    };
   } catch (error) {
     const err = error as AxiosError;
-    defaultResponse.error = err.response?.data;
-  } finally {
-    return defaultResponse;
+    return {
+      token: "",
+      error: err.response?.data,
+    };
   }
 }
 
