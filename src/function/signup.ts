@@ -85,4 +85,4 @@ async function handleSignUp(userData: ISignUpInput, apiUrl: string): Promise<IRe
   }
 }
 
-export { handleSignUp, validate };
+export { handleSignUp };
