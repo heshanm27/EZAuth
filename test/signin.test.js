@@ -48,3 +48,19 @@ test("credentials are not valid", async () => {
 
   expect(token).toBe("");
 });
+
+test("invalid api route", async () => {
+  const { error, token } = await handleSignIn(
+    {
+      email: "Test@gmail.com",
+      password: "12233",
+    },
+    "http://localhost:3002/sign/df"
+  );
+
+  expect(error).toEqual({
+    error: "This route doesn't exist",
+  });
+
+  expect(token).toBe("");
+});
