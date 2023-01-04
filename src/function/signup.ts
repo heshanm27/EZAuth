@@ -56,16 +56,24 @@ function validate(value: ISignUpInput): IValidate {
  */
 async function handleSignUp(userData: ISignUpInput, apiUrl: string): Promise<IResponse> {
   try {
-    await axios.post(apiUrl, {
-      email: userData.email,
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      password: userData.password,
-    });
-    return {
-      status: false,
-      error: {},
-    };
+    const { valid, errorMsg } = validate(userData);
+    if (valid) {
+      await axios.post(apiUrl, {
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        password: userData.password,
+      });
+      return {
+        status: true,
+        error: {},
+      };
+    } else {
+      return {
+        status: false,
+        error: errorMsg,
+      };
+    }
   } catch (error) {
     const err = error as AxiosError;
     return {
