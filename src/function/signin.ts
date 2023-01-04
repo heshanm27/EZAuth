@@ -72,4 +72,4 @@ async function handleSignIn(input: ISignInput): Promise<IResponse> {
   return defaultResponse;
 }
 
-export default handleSignIn;
+export { handleSignIn };
