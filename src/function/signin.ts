@@ -47,7 +47,9 @@ function validate(value: ISignInput): IValidate {
  ***/
 async function handleSignIn(input: ISignInput, apiUrl: string): Promise<IResponse> {
   try {
+    // Validate the input data
     const { valid, errorMsg } = validate(input);
+
     if (valid) {
       const response = await axios.post(apiUrl, { email: input.email, password: input.password });
       const { token } = response.data;
